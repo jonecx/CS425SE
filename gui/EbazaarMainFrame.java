@@ -40,6 +40,8 @@ public class EbazaarMainFrame extends javax.swing.JFrame {
 	private final String MAINTAIN_CATALOGUE = "Maintain Product Catalog";
 	private final String MAINTAIN_CAT_TYPES = "Maintain Catalog Types";
 	
+	
+	
 	JPanel mainPanel;
 	JMenuBar menuBar;
     JMenu menuCustomer, menuAdministrator;
@@ -194,12 +196,12 @@ public class EbazaarMainFrame extends javax.swing.JFrame {
     class SelectOrderActionListener implements ActionListener {
    
 		public void actionPerformed(ActionEvent e) {
-		   
-         
+		            
 				SelectOrderWindow selOrderWindow = new  SelectOrderWindow();
+				setVisible(false);
 				selOrderWindow.setVisible(true);
 				selOrderWindow.setParentWindow(EbazaarMainFrame.this);
-             	setVisible(false);
+             	
 		}
     }    
     

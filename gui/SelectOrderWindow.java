@@ -42,7 +42,8 @@ public class SelectOrderWindow extends JWindow implements ParentWindow {
 	JPanel upper, middle, lower;
 	
 	//constants
-	private final boolean USE_DEFAULT_DATA = true;
+	//private final boolean USE_DEFAULT_DATA = true;
+	private final boolean USE_DEFAULT_DATA = false;
 
     private final String ORDER_ID = "Order ID";
     private final String DATE = "Date";
@@ -70,16 +71,12 @@ public class SelectOrderWindow extends JWindow implements ParentWindow {
 	public SelectOrderWindow() {
 		initializeWindow();
 		defineMainPanel();
-		getContentPane().add(mainPanel);
-		
-		
-			
+		getContentPane().add(mainPanel);		
 	}
 	private void initializeWindow() {
 		
 		setSize(GuiControl.SCREEN_WIDTH,GuiControl.SCREEN_HEIGHT);		
 		GuiControl.centerFrameOnDesktop(this);
-		
 	}
 	
 	private void defineMainPanel() {
@@ -118,6 +115,7 @@ public class SelectOrderWindow extends JWindow implements ParentWindow {
 		middle = GuiControl.createStandardTablePanePanel(table,tablePane);
 				
 	}
+	
 	//buttons
 	public void defineLowerPanel(){
 		//proceed button
@@ -130,7 +128,6 @@ public class SelectOrderWindow extends JWindow implements ParentWindow {
 		cancelButton.addActionListener(new CancelListener());
 		
 
-		
 		//create lower panel
 		JButton [] buttons = {detailsButton,cancelButton};
 		lower = GuiControl.createStandardButtonPanel(buttons);		
@@ -184,7 +181,35 @@ public class SelectOrderWindow extends JWindow implements ParentWindow {
 		List<Integer> allIds = new ArrayList<Integer>();
 		//now populate this list with all order ids that
 		//are associated with this custId in the Order table
- 
+		int orderid;
+		
+		Connection con = null;
+		Statement stmt = null;
+		String dburl ="jdbc:mysql://localhost:3306/AccountsDB";
+		try{
+			Class.forName("com.mysql.jdbc.Driver");
+		}catch(ClassNotFoundException e){
+			e.printStackTrace();
+		}
+		try{
+			con = DriverManager.getConnection(dburl,"root", "1");
+		}catch(SQLException e){
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		try{
+			stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT orderid FROM ord where custid ='"+ custId + "'");
+			while(rs.next()){
+				orderid=rs.getInt("orderid");
+				allIds.add(orderid);
+			}
+			
+		System.out.println("OrderIds: "+ allIds.size());
+		}catch(SQLException s){
+			s.printStackTrace();
+		}
+			
 		return allIds;
 			
 	}
@@ -196,20 +221,45 @@ public class SelectOrderWindow extends JWindow implements ParentWindow {
 		//with the appropriate order info for this orderId:
 		//          orderid, orderdate, totalpriceamount
 		//orderid will need to be converted to a String
-		
+		Connection con = null;
+		Statement stmt = null;
+		String dburl = "jdbc:mysql://localhost:3306/AccountsDB";
+		try{
+			Class.forName("com.mysql.jdbc.Driver");
+		}catch(ClassNotFoundException e){
+			e.printStackTrace();
+		}
+		try{
+			con = DriverManager.getConnection(dburl,"root","1");
+		}catch(SQLException e){
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		try{
+			System.out.println("OK this far");
+			stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT orderdate, totalamountcharged FROM ord WHERE orderid = "+ orderId + "");
+			while(rs.next()){
+			orderData[0] = String.valueOf(orderId);
+			orderData[1] = rs.getString("orderdate");
+			orderData[2] = rs.getString("totalamountcharged");
+			}
+			
+		stmt.close();
+		con.close();
+		}catch(SQLException s){
+			System.out.println(s.getMessage());
+			s.printStackTrace();
+		}
 		
 		return orderData;
 	}		
-	
-	
-
 	
     private void updateTable() {
         
         table.setModel(model);
         table.updateUI();
-        repaint();
-        
+        repaint(); 
     }	
 	
 	public void setParentWindow(Window parentWindow) {
@@ -219,6 +269,8 @@ public class SelectOrderWindow extends JWindow implements ParentWindow {
 	public Window getParentWindow() {
 		return parent;
 	}
+	
+	
 	class ViewDetailsListener implements ActionListener {
         public void actionPerformed(ActionEvent evt) {
         	int selectedRow = table.getSelectedRow();
